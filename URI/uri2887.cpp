@@ -12,50 +12,65 @@ class SegmentTreeRMQ {
             return RMQUtil(0, n - 1, qs, qe, 0); 
         }
 
-        void constructST(vector<int> arr, int n) { 
+        void constructST(vector<int> arr, int n) {
+            level = arr;
             int x = (int) (ceil(log2(n))); 
     
             int max_size = 2 * (int) pow(2, x) - 1; 
-            st = new int[max_size];
+            st.resize(max_size);
+            for(int i = 0; i < st.size(); i++) {
+                st[i] = -1;
+            }
     
-            constructSTUtil(arr, 0, n - 1, 0); 
+            constructSTUtil(0, n - 1, 0);
+        }
+
+        void print() {
+            cout << "size=" << st.size() << " st_tree=";
+            for(int i = 0; i < st.size(); i++) {
+                cout << st[i] << ",";
+            }
+            cout << endl;
         } 
 
     private:
-        int *st;
-
-        int minVal(int x, int y) { 
-            return (x < y) ? x : y; 
-        }
-
-        int getMid(int s, int e) { 
-            return s + (e - s) / 2; 
-        }
+        vector<int> st;
+        vector<int> level;
 
         int RMQUtil(int ss, int se, int qs, int qe, int index) { 
             if (qs <= ss && qe >= se) {
                 return st[index];
             }
     
-            if (se < qs || ss > qe) 
+            if (se < qs || ss > qe) {
                 return INT_MAX;
+            }
     
-            int mid = getMid(ss, se); 
-            return minVal(RMQUtil(ss, mid, qs, qe, 2 * index + 1), 
-                    RMQUtil(mid + 1, se, qs, qe, 2 * index + 2)); 
+            int mid = (ss + se)/2;
+            int q1 = RMQUtil(ss, mid, qs, qe, 2*index+1);
+            int q2 = RMQUtil(mid+1, se, qs, qe, 2*index+2);
+  
+            if (q1 == INT_MAX) return q2;
+            else if (q2 == INT_MAX) return q1;
+  
+            return (level[q1] < level[q2]) ? q1 : q2;
         }
 
-        int constructSTUtil(vector<int> arr, int ss, int se, int si) {
+        void constructSTUtil(int ss, int se, int index) {
             if (ss == se) { 
-                st[si] = arr[ss]; 
-                return arr[ss]; 
-            } 
-    
-            int mid = getMid(ss, se); 
-            st[si] = minVal(constructSTUtil(arr, ss, mid, si * 2 + 1), 
-                    constructSTUtil(arr, mid + 1, se, si * 2 + 2)); 
-            return st[si]; 
-        }  
+                st[index] = ss; 
+            } else {     
+                int mid = (ss + se)/2;
+                constructSTUtil(ss, mid, index*2+1);
+                constructSTUtil(mid + 1, se, index*2+2);
+                
+                if (level[st[2*index+1]] < level[st[2*index+2]]) {
+                    st[index] = st[2*index+1]; 
+                } else {
+                    st[index] = st[2*index+2];
+                }
+            }
+        } 
 };
 
 class Station {
@@ -71,41 +86,47 @@ static vector<int> fai;
 static SegmentTreeRMQ seg_tree;
 
 void init_arrays(int n) {
-    stations.resize(n+1);
-    for(int i = 1; i <= n; i++) {
+    stations.resize(n);
+    for(int i = 0; i < n; i++) {
         Station s;
         s.n = i;
         stations[i] = s;
     }
 
-    level.resize(n+1);
-    level[0] = INT_MAX;
-    fai.resize(n+1);
+    fai.resize(n);
     for(int i = 0; i < fai.size(); i++) {
         fai[i] = -1;
     }
 }
 
 int lca(int a, int b) {
-    int fai_a = euler_path[fai[a]];
-    int fai_b = euler_path[fai[b]];
+    int fai_a = fai[a];
+    int fai_b = fai[b];
     if(fai_a > fai_b) {
-        fai_a = euler_path[fai[b]];
-        fai_b = euler_path[fai[a]];
+        fai_a = fai[b];
+        fai_b = fai[a];
     }
 
-//cout << "a=" << a << " b=" << b << endl;
-//cout << "fai_a=" << fai_a << " fai_b=" << fai_b << endl;
+// cout << "a=" << a << " b=" << b << endl;
+// cout << "fai_a=" << fai_a << " fai_b=" << fai_b << endl;
 
-    int lca = seg_tree.RMQ(fai.size(), fai_a, fai_b);
+    int rmq = seg_tree.RMQ(2*fai.size()-1, fai_a, fai_b);
 
-//cout << "lca=" << lca << endl;
+// cout << "rmq=" << rmq << endl;
 
-    return lca;
+    //int lca = euler_path[rmq];
+
+// cout << "lca=" << lca << endl;
+
+    return rmq;
 }
 
-long dist(int a, int b) {
-    return level[a] + level[b] - 2 * level[ lca(a,b) ];
+int dist(int a, int b) {
+    // cout << "fai_a=" << fai[a] << " fai_b=" << fai[b] << endl;
+    // cout << "level_a=" << level[fai[a]] << " level_b=" << level[fai[b]] << " level_lca_a_b=" << level[ fai[lca(a,b)] ] << endl;
+    int dist = level[fai[a]] + level[fai[b]] - 2 * level[ lca(a,b) ];
+    // cout << "dist=" << dist << endl;
+    return dist;
 }
 
 void dfs(int cur, int prev, int dep) {
@@ -113,33 +134,38 @@ void dfs(int cur, int prev, int dep) {
         fai[cur] = euler_path.size();
     }
 
-    level[cur] = dep;
     euler_path.push_back(cur);
+    level.push_back(dep);
 
     for(long i = 0; i < stations[cur].neighbors.size(); i++) {
         if(stations[cur].neighbors[i] != prev) {
             dfs(stations[cur].neighbors[i], stations[cur].n, dep+1);
             euler_path.push_back(cur);
+            level.push_back(dep);
         }
     }
 }
 
 void print() {
+    cout << "stations=";
     for(int i = 0; i < stations.size(); i++) {
         cout << stations[i].n << ",";
     }
     cout << endl;
 
+    cout << "euler=";
     for(int i = 0; i < euler_path.size(); i++) {
         cout << euler_path[i] << ",";
     }
     cout << endl;
 
+    cout << "level=";
     for(int i = 0; i < level.size(); i++) {
         cout << level[i] << ",";
     }
     cout << endl;
 
+    cout << "fai=";
     for(int i = 0; i < fai.size(); i++) {
         cout << fai[i] << ",";
     }
@@ -159,13 +185,16 @@ int main() {
         cin >> u;
         cin >> v;
 
+        u--;
+        v--;
+
         stations[u].neighbors.push_back(v);
         stations[v].neighbors.push_back(u);
     }
 
-    int n_neig = 0;
+    int n_neig = stations[0].neighbors.size();
     int station_max_neig = 0;
-    for(int i = 1; i <= n; i++) {
+    for(int i = 1; i < n; i++) {
         if( stations[i].neighbors.size() > n_neig ) {
             n_neig = stations[i].neighbors.size();
             station_max_neig = i;
@@ -173,16 +202,26 @@ int main() {
     }
 
     dfs(station_max_neig,-1, 0);
-    seg_tree.constructST(level, level.size());
+    seg_tree.constructST(level, 2*n-1);
 
-    print();
+    // seg_tree.print();
+    // print();
 
     for(int i = 0; i < q; i++) {
         int a,b,c,d;
         cin >> a; cin >> b; cin >> c; cin >> d;
 
+        a--;
+        b--;
+        c--;
+        d--;
+
         int x = dist(a,b) + dist(c,d);
         int y = min( dist(a,c) + dist(b,d), dist(a,d) + dist(b,c) );
+
+        // cout << "dist_a_b=" << dist(a,b) << " dist_c_d=" << dist(c,d) << endl;
+        // cout << "dist_a_c=" << dist(a,c) << " dist_b_d=" << dist(b,d) << endl;
+        // cout << "dist_a_d=" << dist(a,d) << " dist_b_c=" << dist(b,c) << endl;
 
         if( y > x ) {
             cout << 0 << endl;
