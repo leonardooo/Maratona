@@ -29,8 +29,6 @@ void dfs(Circle maior, Circle menor) {
         return;
     }
 
-    // cout << maior.x << "_" << maior.y << "_" << maior.r << " - " << menor.x << "_" << menor.y << "_" << menor.r << endl;
-
     res++;
 
     if(res > circles.size()) {
@@ -51,8 +49,6 @@ int main() {
 
     cin >> n;
 
-    int tr = 0;
-
     circles.resize(n);
     for(int i = 0; i < n; i++) {
         double x,y,r;
@@ -67,32 +63,6 @@ int main() {
     }
 
     sort(circles.begin(), circles.end());
-    
-    // for(int i = circles.size()-1; i >= 0; i--) {
-    //     cout << "Circle " << i << " " << circles[i].x << "_" << circles[i].y << "_" << circles[i].r << endl;
-    // }
-
-    // for(int i = circles.size()-1; i > 0; i--) {
-    //     for(int j = i-1; j >= 0; j--) {
-    //         if(! circles[i].contains( circles[j] )) {
-    //             cout << "Circle " << i << " interceps Circle " << j << endl;
-    //             tr++;
-
-    //             if(tr > circles.size()) {
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     if(tr > circles.size()) {
-    //         break;
-    //     }
-    // }
-
-    // if(tr > circles.size()) {
-    //     cout << "greater" << endl;
-    // } else {
-    //     cout << (2*tr) << endl;
-    // }
 
     vector<Circle> forest;
     vector<Circle>::reverse_iterator it;
@@ -100,8 +70,6 @@ int main() {
 
     for(int i = 1; i < circles.size(); i++) {
         for(auto it = forest.rbegin(); it != forest.rend(); it++) {
-
-            // cout << circles[i].r << " - " << (*it).r << endl;
 
             dfs( circles[i], *it );
 
