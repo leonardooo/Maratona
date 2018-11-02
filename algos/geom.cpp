@@ -1,12 +1,14 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include <set>
 #include <algorithm>
 
 using namespace std;
 
 class Circle {
     public:
+        int n;
         double x,y,r;
 
         vector<Circle> inside;
@@ -55,6 +57,7 @@ int main() {
         cin >> x >> y >> r;
 
         Circle c;
+        c.n = i;
         c.x = x;
         c.y = y;
         c.r = r;
@@ -64,26 +67,26 @@ int main() {
 
     sort(circles.begin(), circles.end());
 
-    vector<Circle> forest;
-    vector<Circle>::reverse_iterator it;
-    forest.push_back(circles[0]);
+    set<int> forest;
+    set<int>::reverse_iterator it;
+    forest.insert(0);
 
     for(int i = 1; i < circles.size(); i++) {
         for(auto it = forest.rbegin(); it != forest.rend(); it++) {
 
-            dfs( circles[i], *it );
+            dfs( circles[i], circles[*it] );
 
             if(res > circles.size()) {
                 break;
             }
 
-            if( circles[i].contains( *it ) ) {
-                circles[i].inside.push_back(*it);
+            if( circles[i].contains( circles[*it] ) ) {
+                circles[i].inside.push_back(circles[*it]);
                 forest.erase(--(it.base()));
             }
         }
 
-        forest.push_back(circles[i]);
+        forest.insert(i);
 
         if(res > circles.size()) {
             break;
