@@ -1,12 +1,19 @@
 import java.io.*;
 import java.util.*;
 class Main {
+
+    static List<Show> shows;
+    static int n;
+    static int[] to;
+    static int[][] dp;
+    static boolean[][] vis;
+
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        List<Show> shows = new ArrayList<Show>();
+        shows = new ArrayList<Show>();
 
-        int n = Integer.parseInt(br.readLine());
+        n = Integer.parseInt(br.readLine());
 
         for(int i = 0; i < n; i++) {
             String[] linha = br.readLine().split(" ");
@@ -25,11 +32,11 @@ class Main {
         }
 
         Collections.sort(shows);
-        int[] to = new int[shows.size()];
-        Arrays.fill(to, -1);
+        to = new int[shows.size()];
         to[shows.size()-1] = shows.size();
 
         for(int i = 0; i < shows.size()-1; i++) {
+            to[i] = shows.size();
             for(int j = i+1; j < shows.size(); j++) {
                 if( shows.get(i).fim <= shows.get(j).ini ) {
                     to[i] = j;
@@ -41,26 +48,11 @@ class Main {
         // System.out.println("Shows:");
         // System.out.println(shows);
         
-        int[][] dp = new int[shows.size()+1][(1 << n)];
-        // for(int i = 0; i < shows.size(); i++) {
-        //     if(to[i] != -1) {
-        //         dp[to[i]][1 << shows.get(i).palco] = shows.get(i).mus;
-        //     }
-        // }
-    
+        dp = new int[shows.size()+1][(1 << n)];
+        vis = new boolean[shows.size()+1][(1 << n)];
         int maxj = (1 << n); //System.out.println(maxj + "\n");
-        for(int j = 0; j < maxj; j++) {
-            for(int i = 0; i < shows.size(); i++) {
-                //if(dp[i][j] == 0) continue;
 
-                dp[i+1][j] = Math.max( dp[i+1][j], dp[i][j] );
-
-                if(to[i] != -1) {
-                    dp[to[i]][j | (1 << shows.get(i).palco)] = Math.max( dp[to[i]][j | (1 << shows.get(i).palco)],
-                                                                        dp[i][j] + shows.get(i).mus );
-                }
-            }
-        }
+        calc(0,0);
 
         // for(int i = 0; i <= shows.size(); i++) {
         //     System.out.println(Arrays.toString(dp[i]));
@@ -75,6 +67,22 @@ class Main {
         System.out.println(res);
 
 
+    }
+
+    static void calc(int x, int y) {
+        if( x > shows.size() -1 ) return;
+        if( y >= (1 << n) ) return;
+        // if( vis[x][y] ) return;
+
+        int toy = y | (1 << shows.get(x).palco);
+
+        dp[x+1][y] = Math.max(dp[x+1][y], dp[x][y]);
+        calc(x+1,y);
+
+        dp[to[x]][toy] = Math.max(dp[to[x]][toy], dp[x][y] + shows.get(x).mus);
+        calc(to[x],toy);
+
+        // vis[x][y] = true;
     }
 }
 
