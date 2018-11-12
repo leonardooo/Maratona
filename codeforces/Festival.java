@@ -1,6 +1,6 @@
 import java.io.*;
 import java.util.*;
-class Main {
+public class Festival {
 
     static List<Show> shows;
     static int n;
