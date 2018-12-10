@@ -37,19 +37,19 @@ public class Barcelonian {
         n1.add(n4);
         n4.add(n2);
 
-        Set<Node> nodes = new HashSet<>();
-        nodes.add(n1);
-        nodes.add(n2);
-        nodes.add(n3);
-        nodes.add(n4);
-
+        Map<Integer,Node> nodes = new HashMap<>();
+        nodes.put(n1.hashCode(), n1);
+        nodes.put(n2.hashCode(), n2);
+        nodes.put(n3.hashCode(), n3);
+        nodes.put(n4.hashCode(), n4);
+        
         Node nTemp1 = null;
         Node nTemp2 = null;
         Node nTemp3 = null;
         Node nTemp4 = null;
 
         double xtemp = (-(y1*b)-c)/a;
-        if(xtemp % 1 == 0) {
+        //if(xtemp % 1 == 0) {
             boolean inside = false;
             if(x1 < x2) {
                 inside = x1 <= xtemp && x2 >= xtemp;
@@ -59,16 +59,21 @@ public class Barcelonian {
 
             if(inside) {
                 nTemp1 = new Node(xtemp,y1);
+                if(nodes.get(nTemp1.hashCode()) != null) {
+                    nTemp1 = nodes.get(nTemp1.hashCode());
+                } else {
+                    nodes.put(nTemp1.hashCode(), nTemp1 );
+                }
                 n1.add(nTemp1);
-                nodes.add( nTemp1 );
+                
             }
-        }
+        //}
 
         //System.out.println(xtemp);
 
         xtemp = (-(y2*b)-c)/a;
-        if(xtemp % 1 == 0) {
-            boolean inside = false;
+        //if(xtemp % 1 == 0) {
+            inside = false;
             if(x1 < x2) {
                 inside = x1 <= xtemp && x2 >= xtemp;
             } else {
@@ -77,16 +82,20 @@ public class Barcelonian {
 
             if(inside) {
                 nTemp3 = new Node(xtemp,y2);
+                if(nodes.get(nTemp3.hashCode()) != null) {
+                    nTemp3 = nodes.get(nTemp3.hashCode());
+                } else {
+                    nodes.put(nTemp3.hashCode(), nTemp3 );
+                }
                 nTemp3.add(n2);
-                nodes.add( nTemp3 );
             }
-        }
+        //}
 
         //System.out.println(xtemp);
 
         double ytemp = (-(x1*a)-c)/b;
-        if(ytemp % 1 == 0) {
-            boolean inside = false;
+        //if(ytemp % 1 == 0) {
+            inside = false;
             if(y1 < y2) {
                 inside = y1 <= ytemp && y2 >= ytemp;
             } else {
@@ -95,16 +104,20 @@ public class Barcelonian {
 
             if(inside) {
                 nTemp2 = new Node(x1,ytemp);
+                if(nodes.get(nTemp2.hashCode()) != null) {
+                    nTemp2 = nodes.get(nTemp2.hashCode());
+                } else {
+                    nodes.put(nTemp2.hashCode(), nTemp2 );
+                }
                 n1.add(nTemp2);
-                nodes.add( nTemp2 );
             }
-        }
+        //}
 
         //System.out.println(ytemp);
 
         ytemp = (-(x2*a)-c)/b;
-        if(ytemp % 1 == 0) {
-            boolean inside = false;
+        //if(ytemp % 1 == 0) {
+            inside = false;
             if(y1 < y2) {
                 inside = y1 <= ytemp && y2 >= ytemp;
             } else {
@@ -113,30 +126,43 @@ public class Barcelonian {
 
             if(inside) {
                 nTemp4 = new Node(x2,ytemp);
+                if(nodes.get(nTemp4.hashCode()) != null) {
+                    nTemp4 = nodes.get(nTemp4.hashCode());
+                } else {
+                    nodes.put(nTemp4.hashCode(), nTemp4 );
+                }
                 nTemp4.add(n2);
-                nodes.add( nTemp4 );
             }
-        }
+        //}
 
-        //System.out.println(ytemp);
+        // System.out.println(ytemp);
+
+        // System.out.println(nTemp1);
+        // System.out.println(nTemp2);
+        // System.out.println(nTemp3);
+        // System.out.println(nTemp4);
 
         if(nTemp1 != null && nTemp3 != null) {
+            //System.out.println("1 3");
             nTemp1.add(nTemp3);
         } else if(nTemp2 != null && nTemp4 != null) {
+            //System.out.println("2 4");
             nTemp2.add(nTemp4);
         } else if(nTemp1 != null && nTemp4 != null) {
+            //System.out.println("1 4");
             nTemp1.add(nTemp4);
         } else if(nTemp2 != null && nTemp3 != null) {
+            //System.out.println("2 3");
             nTemp2.add(nTemp3);
         }
 
         dfs(n1,null);
 
-        System.out.println("size=" + nodes.size());
-        System.out.println(nodes);
+        // System.out.println("size=" + nodes.size());
+        // System.out.println(nodes);
 
-        System.out.println();
-        System.out.println(round(n2.dist));
+        // System.out.println();
+        System.out.println(n2.dist);
     }
 
     static void dfs(Node cur, Node anc) {
